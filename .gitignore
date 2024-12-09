@@ -1,0 +1,56 @@
+# Ignore build directories
+/build/
+# Ignore object files and other intermediate files
+*.o
+*.obj
+*.lo
+*.la
+*.al
+*.so
+*.a
+*.lib
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+
+# Ignore CMake files
+CMakeFiles/
+CMakeCache.txt
+CMakeError.log
+CMakeOutput.log
+Makefile
+cmake_install.cmake
+
+# Ignore IDE project files (VS, Xcode, etc.)
+.vscode/
+.idea/
+.vs/
+# For JetBrains IDEs (CLion, PhpStorm, etc.)
+.idea/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+
+# Ignore generated files by clang/clang++
+*.dSYM/
+
+# Ignore dependency files (compiler generated)
+*.d
+
+# Ignore other editor or OS-specific files
+*.swp
+*.swo
+*~ 
+
+# Ignore temporary files created by some editors
+*.[0-9]
+*.bak
+*.tmp
+
+# Ignore node_modules (if working with embedded C++ in a Node.js project)
+node_modules/
