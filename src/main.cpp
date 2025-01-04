@@ -4,6 +4,7 @@
 #include <mpd/connection.h>
 #include <mpd/error.h>
 #include <mpd/player.h>
+#include <mpd/song.h>
 #include <mpd/status.h>
 #include <mpd/tag.h>
 
@@ -34,40 +35,15 @@ static void displayHelpMenu() {
   std::cout << "         skip:    skip song" << std::endl;
   std::cout << " --help, help:   display this menu" << std::endl;
   std::cout << std::endl;
-  std::cout << "software provided by Science Giga corp." << std::endl;
-  std::cout << std::endl;
 }
 
-static void returnServerStatus(struct mpd_connection *conn,
-                               struct mpd_status *status,
-                               struct mpd_song *song) {
-  // https://github.com/MusicPlayerDaemon/libmpdclient/blob/master/src/example.c
-  // print server version
-  for (int i = 0; i < 3; ++i) {
-    std::cout << "Version: " << mpd_connection_get_server_version(conn)[i]
-              << std::endl;
-  }
+static void returnSong(struct mpd_connection *conn, struct mpd_status *status,
+                       struct mpd_song *song) {
 
-  // basic information
-  std::cout << "Volume: " << mpd_status_get_volume(status) << std::endl;
-  std::cout << "Repeat: " << mpd_status_get_repeat(status) << std::endl;
-  std::cout << "Random: " << mpd_status_get_random(status) << std::endl;
-  std::cout << "Consume: " << mpd_status_get_consume(status) << std::endl;
-  std::cout << "State: " << mpd_status_get_state(status) << std::endl;
-  std::cout << std::endl;
-
-  if (mpd_status_get_state(status) == MPD_STATE_PLAY ||
-      mpd_status_get_state(status) == MPD_STATE_PAUSE) {
-    std::cout << "Song: " << mpd_status_get_song_id(status) << std::endl;
-    std::cout << "Elapsed Time (ms): " << mpd_status_get_elapsed_ms(status)
-              << std::endl;
-    std::cout << "Song Position: " << mpd_status_get_song_pos(status)
-              << std::endl;
-  }
-
-  while (song != NULL) {
-    std::cout << "Track: ";
-  }
+  std::cout << "Playing: " << mpd_song_get_tag(song, MPD_TAG_ARTIST, 0) << " \""
+            << mpd_song_get_tag(song, MPD_TAG_ALBUM, 0) << "\" ("
+            << mpd_song_get_tag(song, MPD_TAG_DATE, 0) << ") - "
+            << mpd_song_get_tag(song, MPD_TAG_TITLE, 0) << std::endl;
 }
 
 // https://github.com/MusicPlayerDaemon/libmpdclient/blob/master/src/example.c
@@ -143,6 +119,9 @@ int main(int argc, char *argv[]) {
   struct mpd_song *song;
   mpd_send_current_song(mpdConnection);
   song = mpd_recv_song(mpdConnection);
+  if (song == NULL) {
+    handle_error(mpdConnection);
+  }
 
   // Main logic of the client
   std::string command = argv[1];
@@ -159,14 +138,18 @@ int main(int argc, char *argv[]) {
   } else if (command == "help" || command == "--help") {
     displayHelpMenu();
   } else if (command == "status" || command == "s") {
-    returnServerStatus(mpdConnection, status, song);
+    returnSong(mpdConnection, status, song);
   } else {
     std::cout << "Unknown argument \"" << command << "\""
               << "; see help menu using --help" << std ::endl;
+    mpd_status_free(status);
+    mpd_song_free(song);
     return 1;
   }
 
+  // free the allocated memory
   // mpd_connection_free(mpdConnection);
+  mpd_connection_free(mpdConnection);
   mpd_status_free(status);
   mpd_song_free(song);
   return 0;
